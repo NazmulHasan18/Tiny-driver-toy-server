@@ -29,17 +29,38 @@ async function run() {
       const carGalleryCollection = database.collection("toyCarGallery");
       const carsCollection = database.collection("tinyDriverCars");
 
+      const index = await carsCollection.createIndex({ name: 1 }, { name: "toyName" });
+
       app.get("/car_gallery", async (req, res) => {
          const result = await carGalleryCollection.find({}).toArray();
          res.send(result);
       });
 
       app.get("/all_toys", async (req, res) => {
-         const toysPerPage = 20;
+         const toysPerPage = 10;
          const currentPage = parseInt(req.query.page, 10) || 1;
          const allToysNum = await carsCollection.estimatedDocumentCount();
          const totalPages = Math.ceil(allToysNum / toysPerPage);
          const skip = (currentPage - 1) * toysPerPage;
+         const text = req.query.search;
+         if (text) {
+            const query = await carsCollection
+               .find({
+                  name: { $regex: text, $options: "i" },
+               })
+               .toArray();
+
+            const result = await carsCollection
+               .find({
+                  name: { $regex: text, $options: "i" },
+               })
+               .skip(skip)
+               .limit(toysPerPage)
+               .toArray();
+            const toysCount = query.length || 1;
+
+            return res.send({ totalPages: Math.ceil(toysCount / toysPerPage), toys: result });
+         }
          const result = await carsCollection.find({}).skip(skip).limit(toysPerPage).toArray();
          res.send({ totalPages, toys: result });
       });
