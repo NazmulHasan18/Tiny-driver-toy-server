@@ -27,9 +27,15 @@ async function run() {
 
       const database = client.db("tinyDriverDB");
       const carGalleryCollection = database.collection("toyCarGallery");
+      const carsCollection = database.collection("tinyDriverCar");
 
       app.get("/car_gallery", async (req, res) => {
          const result = await carGalleryCollection.find({}).toArray();
+         res.send(result);
+      });
+
+      app.get("cars", async (req, res) => {
+         const result = await carsCollection.find({}).toArray();
          res.send(result);
       });
 
