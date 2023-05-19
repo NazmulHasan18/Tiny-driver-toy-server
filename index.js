@@ -27,15 +27,36 @@ async function run() {
 
       const database = client.db("tinyDriverDB");
       const carGalleryCollection = database.collection("toyCarGallery");
-      const carsCollection = database.collection("tinyDriverCar");
+      const carsCollection = database.collection("tinyDriverCars");
 
       app.get("/car_gallery", async (req, res) => {
          const result = await carGalleryCollection.find({}).toArray();
          res.send(result);
       });
 
-      app.get("cars", async (req, res) => {
+      app.get("/cars", async (req, res) => {
          const result = await carsCollection.find({}).toArray();
+         res.send(result);
+      });
+
+      app.get("/sub_category", async (req, res) => {
+         const options = {
+            projection: { sub_category: 1, _id: 0 },
+         };
+         const subCategories = await carsCollection.find({}, options).toArray();
+         let subCategory = [];
+         const categories = subCategories.map((category) => {
+            if (!subCategory.includes(category.sub_category)) {
+               subCategory.push(category.sub_category);
+            }
+         });
+         res.send(subCategory);
+      });
+
+      app.get("/cars/:sCategory", async (req, res) => {
+         const sCategory = req.params.sCategory;
+         const query = { sub_category: sCategory };
+         const result = await carsCollection.find(query).toArray();
          res.send(result);
       });
 
