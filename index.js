@@ -8,7 +8,7 @@ const port = process.env.PORT || 4000;
 app.use(cors());
 app.use(express.json());
 
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const uri = `mongodb+srv://${process.env.SECRET_USER}:${process.env.SECRET_PASS}@cluster0.lvw8wzq.mongodb.net/?retryWrites=true&w=majority`;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
@@ -23,7 +23,7 @@ const client = new MongoClient(uri, {
 async function run() {
    try {
       // Connect the client to the server	(optional starting in v4.7)
-      await client.connect();
+      client.connect();
 
       const database = client.db("tinyDriverDB");
       const carGalleryCollection = database.collection("toyCarGallery");
@@ -34,8 +34,26 @@ async function run() {
          res.send(result);
       });
 
+      app.get("/all_toys", async (req, res) => {
+         const toysPerPage = 20;
+         const currentPage = parseInt(req.query.page, 10) || 1;
+         const allToysNum = await carsCollection.estimatedDocumentCount();
+         const totalPages = Math.ceil(allToysNum / toysPerPage);
+         const skip = (currentPage - 1) * toysPerPage;
+         const result = await carsCollection.find({}).skip(skip).limit(toysPerPage).toArray();
+         res.send({ totalPages, toys: result });
+      });
+
       app.get("/cars", async (req, res) => {
          const result = await carsCollection.find({}).toArray();
+         res.send(result);
+      });
+
+      app.get("/car_details/:id", async (req, res) => {
+         const id = req.params.id;
+         console.log(id);
+         const query = { _id: new ObjectId(id) };
+         const result = await carsCollection.findOne(query);
          res.send(result);
       });
 
