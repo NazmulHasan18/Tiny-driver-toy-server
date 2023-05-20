@@ -22,7 +22,6 @@ const client = new MongoClient(uri, {
 
 async function run() {
    try {
-      // Connect the client to the server	(optional starting in v4.7)
       // await client.connect();
 
       const database = client.db("tinyDriverDB");
@@ -64,6 +63,7 @@ async function run() {
          const result = await carsCollection.find({}).skip(skip).limit(toysPerPage).toArray();
          res.send({ totalPages, toys: result });
       });
+
       app.get("/my_toys/:email", async (req, res) => {
          const toysPerPage = 20;
          const email = req.params.email;
@@ -121,11 +121,16 @@ async function run() {
          res.send(result);
       });
 
-      // Send a ping to confirm a successful connection
+      app.delete("/my_toys/:id", async (req, res) => {
+         const id = req.params.id;
+         const query = { _id: new ObjectId(id) };
+         const result = await carsCollection.deleteOne(query);
+         res.send(result);
+      });
+
       await client.db("admin").command({ ping: 1 });
       console.log("Pinged your deployment. You successfully connected to MongoDB!");
    } finally {
-      // Ensures that the client will close when you finish/error
       //   await client.close();
    }
 }
