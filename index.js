@@ -69,10 +69,16 @@ async function run() {
          const email = req.params.email;
          const currentPage = parseInt(req.query.page, 10) || 1;
 
+         const sortOrder = req.query.sortOrder === "desc" ? -1 : 1;
+
          const skip = (currentPage - 1) * toysPerPage;
+
+         const sortOptions = { price: sortOrder };
+         console.log(sortOptions);
 
          const result = await carsCollection
             .find({ seller_email: email })
+            .sort(sortOptions)
             .skip(skip)
             .limit(toysPerPage)
             .toArray();
@@ -119,6 +125,28 @@ async function run() {
 
          const result = await carsCollection.insertOne(carData);
          res.send(result);
+      });
+
+      app.patch("/update_toy/:id", async (req, res) => {
+         const id = req.params.id;
+         const filter = { _id: new ObjectId(id) };
+         const newToy = req.body;
+         const updateToy = {
+            $set: {
+               price: newToy.price,
+               rating: newToy.rating,
+               description: newToy.description,
+               available_quantity: newToy.available_quantity,
+            },
+         };
+         const existToy = await carsCollection.findOne(filter);
+
+         if (existToy.email === newToy.email) {
+            const result = await carsCollection.updateOne(filter, updateToy);
+            return res.send(result);
+         } else {
+            return res.status(400).send({ error: "You are not allowed to update" });
+         }
       });
 
       app.delete("/my_toys/:id", async (req, res) => {
