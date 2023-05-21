@@ -27,6 +27,7 @@ async function run() {
       const database = client.db("tinyDriverDB");
       const carGalleryCollection = database.collection("toyCarGallery");
       const carsCollection = database.collection("tinyDriverCars");
+      const reviewCollection = database.collection("customerSays");
 
       // const index = await carsCollection.createIndex({ name: 1 }, { name: "toyName" });
 
@@ -89,6 +90,11 @@ async function run() {
 
       app.get("/cars", async (req, res) => {
          const result = await carsCollection.find({}).toArray();
+         res.send(result);
+      });
+
+      app.get("/reviews", async (req, res) => {
+         const result = await reviewCollection.find({}).toArray();
          res.send(result);
       });
 
