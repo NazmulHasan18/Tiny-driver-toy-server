@@ -133,6 +133,14 @@ async function run() {
          res.send(result);
       });
 
+      app.put("/reviews", async (req, res) => {
+         const reviewData = req.body;
+         console.log(reviewData);
+         const result = await reviewCollection.insertOne(reviewData);
+
+         res.send(result);
+      });
+
       app.patch("/update_toy/:id", async (req, res) => {
          const id = req.params.id;
          const filter = { _id: new ObjectId(id) };
