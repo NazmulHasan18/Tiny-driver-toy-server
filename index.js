@@ -105,6 +105,14 @@ async function run() {
          res.send(result);
       });
 
+      app.get("/featureToys", async (req, res) => {
+         const result = await carsCollection
+            .find({ rating: { $gt: 4.5 } })
+            .limit(10)
+            .toArray();
+         res.send(result);
+      });
+
       app.get("/sub_category", async (req, res) => {
          const options = {
             projection: { sub_category: 1, _id: 0 },
